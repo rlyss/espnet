@@ -122,6 +122,7 @@
 <li class="toctree-l1"><a class="reference internal" href="espnet.lm.html">espnet.lm package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="espnet.st.html">espnet.st package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="espnet.nets.html">espnet.nets package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="espnet2.hubert.html">espnet2.hubert package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="espnet2.asr.html">espnet2.asr package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="espnet2.samplers.html">espnet2.samplers package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="espnet2.text.html">espnet2.text package</a></li>
@@ -355,6 +356,26 @@ espnet2/iterators/chunk_iter_factory.py</p></li>
 <dt id="espnet2.enh.espnet_model.ESPnetEnhancementModel.si_snr_loss_zeromean">
 <em class="property">static </em><code class="sig-name descname">si_snr_loss_zeromean</code><span class="sig-paren">(</span><em class="sig-param">ref</em>, <em class="sig-param">inf</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/espnet2/enh/espnet_model.html#ESPnetEnhancementModel.si_snr_loss_zeromean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#espnet2.enh.espnet_model.ESPnetEnhancementModel.si_snr_loss_zeromean" title="Permalink to this definition">¶</a></dt>
 <dd><p>SI-SNR loss with zero-mean in pre-processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ref</strong> – (Batch, samples)</p></li>
+<li><p><strong>inf</strong> – (Batch, samples)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(Batch,)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>loss</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="espnet2.enh.espnet_model.ESPnetEnhancementModel.snr_loss">
+<em class="property">static </em><code class="sig-name descname">snr_loss</code><span class="sig-paren">(</span><em class="sig-param">ref</em>, <em class="sig-param">inf</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/espnet2/enh/espnet_model.html#ESPnetEnhancementModel.snr_loss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#espnet2.enh.espnet_model.ESPnetEnhancementModel.snr_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>SNR loss</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">

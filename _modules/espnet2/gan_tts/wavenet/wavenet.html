@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>espnet2.gan_tts.vits.wavenet &mdash; ESPnet 0.10.2a1 documentation</title>
+  <title>espnet2.gan_tts.wavenet.wavenet &mdash; ESPnet 0.10.2a1 documentation</title>
   
 
   
@@ -120,6 +120,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../_gen/espnet.lm.html">espnet.lm package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../_gen/espnet.st.html">espnet.st package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../_gen/espnet.nets.html">espnet.nets package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../_gen/espnet2.hubert.html">espnet2.hubert package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../_gen/espnet2.asr.html">espnet2.asr package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../_gen/espnet2.samplers.html">espnet2.samplers package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../_gen/espnet2.text.html">espnet2.text package</a></li>
@@ -196,7 +197,7 @@
         
           <li><a href="../../../index.html">Module code</a> &raquo;</li>
         
-      <li>espnet2.gan_tts.vits.wavenet</li>
+      <li>espnet2.gan_tts.wavenet.wavenet</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -211,7 +212,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for espnet2.gan_tts.vits.wavenet</h1><div class="highlight"><pre>
+  <h1>Source code for espnet2.gan_tts.wavenet.wavenet</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright 2021 Tomoki Hayashi</span>
 <span class="c1">#  Apache 2.0  (http://www.apache.org/licenses/LICENSE-2.0)</span>
 
@@ -228,11 +229,11 @@
 
 <span class="kn">import</span> <span class="nn">torch</span>
 
-<span class="kn">from</span> <span class="nn">espnet2.gan_tts.vits.residual_block</span> <span class="kn">import</span> <span class="n">Conv1d1x1</span>
-<span class="kn">from</span> <span class="nn">espnet2.gan_tts.vits.residual_block</span> <span class="kn">import</span> <span class="n">WaveNetResidualBlock</span> <span class="k">as</span> <span class="n">ResidualBlock</span>
+<span class="kn">from</span> <span class="nn">espnet2.gan_tts.wavenet.residual_block</span> <span class="kn">import</span> <span class="n">Conv1d1x1</span>
+<span class="kn">from</span> <span class="nn">espnet2.gan_tts.wavenet.residual_block</span> <span class="kn">import</span> <span class="n">ResidualBlock</span>
 
 
-<div class="viewcode-block" id="WaveNet"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.vits.wavenet.WaveNet">[docs]</a><span class="k">class</span> <span class="nc">WaveNet</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="WaveNet"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.wavenet.wavenet.WaveNet">[docs]</a><span class="k">class</span> <span class="nc">WaveNet</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;WaveNet with global conditioning.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -328,7 +329,7 @@
         <span class="k">if</span> <span class="n">use_weight_norm</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">apply_weight_norm</span><span class="p">()</span>
 
-<div class="viewcode-block" id="WaveNet.forward"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.vits.wavenet.WaveNet.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+<div class="viewcode-block" id="WaveNet.forward"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.wavenet.wavenet.WaveNet.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">x_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -368,7 +369,7 @@
 
         <span class="k">return</span> <span class="n">x</span></div>
 
-<div class="viewcode-block" id="WaveNet.remove_weight_norm"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.vits.wavenet.WaveNet.remove_weight_norm">[docs]</a>    <span class="k">def</span> <span class="nf">remove_weight_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="WaveNet.remove_weight_norm"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.wavenet.wavenet.WaveNet.remove_weight_norm">[docs]</a>    <span class="k">def</span> <span class="nf">remove_weight_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Remove weight normalization module from all of the layers.&quot;&quot;&quot;</span>
 
         <span class="k">def</span> <span class="nf">_remove_weight_norm</span><span class="p">(</span><span class="n">m</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -380,7 +381,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">_remove_weight_norm</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="WaveNet.apply_weight_norm"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.vits.wavenet.WaveNet.apply_weight_norm">[docs]</a>    <span class="k">def</span> <span class="nf">apply_weight_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="WaveNet.apply_weight_norm"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.wavenet.wavenet.WaveNet.apply_weight_norm">[docs]</a>    <span class="k">def</span> <span class="nf">apply_weight_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Apply weight normalization module from all of the layers.&quot;&quot;&quot;</span>
 
         <span class="k">def</span> <span class="nf">_apply_weight_norm</span><span class="p">(</span><span class="n">m</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>

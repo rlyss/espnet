@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>espnet2.gan_tts.vits.residual_block &mdash; ESPnet 0.10.2a1 documentation</title>
+  <title>espnet2.gan_tts.wavenet.residual_block &mdash; ESPnet 0.10.2a1 documentation</title>
   
 
   
@@ -120,6 +120,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../_gen/espnet.lm.html">espnet.lm package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../_gen/espnet.st.html">espnet.st package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../_gen/espnet.nets.html">espnet.nets package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../_gen/espnet2.hubert.html">espnet2.hubert package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../_gen/espnet2.asr.html">espnet2.asr package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../_gen/espnet2.samplers.html">espnet2.samplers package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../_gen/espnet2.text.html">espnet2.text package</a></li>
@@ -196,7 +197,7 @@
         
           <li><a href="../../../index.html">Module code</a> &raquo;</li>
         
-      <li>espnet2.gan_tts.vits.residual_block</li>
+      <li>espnet2.gan_tts.wavenet.residual_block</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -211,7 +212,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for espnet2.gan_tts.vits.residual_block</h1><div class="highlight"><pre>
+  <h1>Source code for espnet2.gan_tts.wavenet.residual_block</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright 2021 Tomoki Hayashi</span>
 <span class="c1">#  Apache 2.0  (http://www.apache.org/licenses/LICENSE-2.0)</span>
 
@@ -223,9 +224,6 @@
 
 <span class="kn">import</span> <span class="nn">math</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
 
@@ -233,21 +231,21 @@
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 
 
-<div class="viewcode-block" id="Conv1d"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.vits.residual_block.Conv1d">[docs]</a><span class="k">class</span> <span class="nc">Conv1d</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv1d</span><span class="p">):</span>
+<div class="viewcode-block" id="Conv1d"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.wavenet.residual_block.Conv1d">[docs]</a><span class="k">class</span> <span class="nc">Conv1d</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv1d</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Conv1d module with customized initialization.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize Conv1d module.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Conv1d.reset_parameters"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.vits.residual_block.Conv1d.reset_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">reset_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Conv1d.reset_parameters"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.wavenet.residual_block.Conv1d.reset_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">reset_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Reset parameters.&quot;&quot;&quot;</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">kaiming_normal_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">nonlinearity</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">constant_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="Conv1d1x1"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.vits.residual_block.Conv1d1x1">[docs]</a><span class="k">class</span> <span class="nc">Conv1d1x1</span><span class="p">(</span><span class="n">Conv1d</span><span class="p">):</span>
+<div class="viewcode-block" id="Conv1d1x1"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.wavenet.residual_block.Conv1d1x1">[docs]</a><span class="k">class</span> <span class="nc">Conv1d1x1</span><span class="p">(</span><span class="n">Conv1d</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;1x1 Conv1d with customized initialization.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
@@ -257,7 +255,7 @@
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="WaveNetResidualBlock"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.vits.residual_block.WaveNetResidualBlock">[docs]</a><span class="k">class</span> <span class="nc">WaveNetResidualBlock</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="ResidualBlock"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.wavenet.residual_block.ResidualBlock">[docs]</a><span class="k">class</span> <span class="nc">ResidualBlock</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Residual block module in WaveNet.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -273,7 +271,7 @@
         <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">scale_residual</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialize WaveNetResidualBlock module.</span>
+        <span class="sd">&quot;&quot;&quot;Initialize ResidualBlock module.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            kernel_size (int): Kernel size of dilation convolution layer.</span>
@@ -328,7 +326,7 @@
             <span class="n">gate_out_channels</span><span class="p">,</span> <span class="n">residual_channels</span> <span class="o">+</span> <span class="n">skip_channels</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="WaveNetResidualBlock.forward"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.vits.residual_block.WaveNetResidualBlock.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+<div class="viewcode-block" id="ResidualBlock.forward"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.wavenet.residual_block.ResidualBlock.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">x_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -384,91 +382,6 @@
             <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">s</span></div></div>
-
-
-<div class="viewcode-block" id="HiFiGANResidualBlock"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.vits.residual_block.HiFiGANResidualBlock">[docs]</a><span class="k">class</span> <span class="nc">HiFiGANResidualBlock</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Residual block module in HiFiGAN.&quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">kernel_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
-        <span class="n">channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span>
-        <span class="n">dilations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
-        <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">use_additional_convs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">nonlinear_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;LeakyReLU&quot;</span><span class="p">,</span>
-        <span class="n">nonlinear_activation_params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;negative_slope&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">},</span>
-    <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialize HiFiGANResidualBlock module.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            kernel_size (int): Kernel size of dilation convolution layer.</span>
-<span class="sd">            channels (int): Number of channels for convolution layer.</span>
-<span class="sd">            dilations (List[int]): List of dilation factors.</span>
-<span class="sd">            use_additional_convs (bool): Whether to use additional convolution layers.</span>
-<span class="sd">            bias (bool): Whether to add bias parameter in convolution layers.</span>
-<span class="sd">            nonlinear_activation (str): Activation function module name.</span>
-<span class="sd">            nonlinear_activation_params (Dict[str, Any]): Hyperparameters for activation</span>
-<span class="sd">                function.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">use_additional_convs</span> <span class="o">=</span> <span class="n">use_additional_convs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">convs1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">use_additional_convs</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">convs2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
-        <span class="k">assert</span> <span class="n">kernel_size</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Kernal size must be odd number.&quot;</span>
-        <span class="k">for</span> <span class="n">dilation</span> <span class="ow">in</span> <span class="n">dilations</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">convs1</span> <span class="o">+=</span> <span class="p">[</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-                    <span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="p">,</span> <span class="n">nonlinear_activation</span><span class="p">)(</span>
-                        <span class="o">**</span><span class="n">nonlinear_activation_params</span>
-                    <span class="p">),</span>
-                    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv1d</span><span class="p">(</span>
-                        <span class="n">channels</span><span class="p">,</span>
-                        <span class="n">channels</span><span class="p">,</span>
-                        <span class="n">kernel_size</span><span class="p">,</span>
-                        <span class="mi">1</span><span class="p">,</span>
-                        <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span><span class="p">,</span>
-                        <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span>
-                        <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="n">kernel_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">dilation</span><span class="p">,</span>
-                    <span class="p">),</span>
-                <span class="p">)</span>
-            <span class="p">]</span>
-            <span class="k">if</span> <span class="n">use_additional_convs</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">convs2</span> <span class="o">+=</span> <span class="p">[</span>
-                    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-                        <span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="p">,</span> <span class="n">nonlinear_activation</span><span class="p">)(</span>
-                            <span class="o">**</span><span class="n">nonlinear_activation_params</span>
-                        <span class="p">),</span>
-                        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv1d</span><span class="p">(</span>
-                            <span class="n">channels</span><span class="p">,</span>
-                            <span class="n">channels</span><span class="p">,</span>
-                            <span class="n">kernel_size</span><span class="p">,</span>
-                            <span class="mi">1</span><span class="p">,</span>
-                            <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                            <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span>
-                            <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="n">kernel_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
-                        <span class="p">),</span>
-                    <span class="p">)</span>
-                <span class="p">]</span>
-
-<div class="viewcode-block" id="HiFiGANResidualBlock.forward"><a class="viewcode-back" href="../../../../_gen/espnet2.gan_tts.html#espnet2.gan_tts.vits.residual_block.HiFiGANResidualBlock.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculate forward propagation.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            x (Tensor): Input tensor (B, channels, T).</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            Tensor: Output tensor (B, channels, T).</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convs1</span><span class="p">)):</span>
-            <span class="n">xt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convs1</span><span class="p">[</span><span class="n">idx</span><span class="p">](</span><span class="n">x</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_additional_convs</span><span class="p">:</span>
-                <span class="n">xt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convs2</span><span class="p">[</span><span class="n">idx</span><span class="p">](</span><span class="n">xt</span><span class="p">)</span>
-            <span class="n">x</span> <span class="o">=</span> <span class="n">xt</span> <span class="o">+</span> <span class="n">x</span>
-        <span class="k">return</span> <span class="n">x</span></div></div>
 </pre></div>
 
            </div>

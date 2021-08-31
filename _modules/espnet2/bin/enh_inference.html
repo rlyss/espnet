@@ -120,6 +120,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../_gen/espnet.lm.html">espnet.lm package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../_gen/espnet.st.html">espnet.st package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../_gen/espnet.nets.html">espnet.nets package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_gen/espnet2.hubert.html">espnet2.hubert package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../_gen/espnet2.asr.html">espnet2.asr package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../_gen/espnet2.samplers.html">espnet2.samplers package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../_gen/espnet2.text.html">espnet2.text package</a></li>
@@ -217,6 +218,7 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Sequence</span>
@@ -257,8 +259,8 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">enh_train_config</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
-        <span class="n">enh_model_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">train_config</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">model_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">segment_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">hop_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">normalize_segment_scale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -272,7 +274,7 @@
 
         <span class="c1"># 1. Build Enh model</span>
         <span class="n">enh_model</span><span class="p">,</span> <span class="n">enh_train_args</span> <span class="o">=</span> <span class="n">EnhancementTask</span><span class="o">.</span><span class="n">build_model_from_file</span><span class="p">(</span>
-            <span class="n">enh_train_config</span><span class="p">,</span> <span class="n">enh_model_file</span><span class="p">,</span> <span class="n">device</span>
+            <span class="n">train_config</span><span class="p">,</span> <span class="n">model_file</span><span class="p">,</span> <span class="n">device</span>
         <span class="p">)</span>
         <span class="n">enh_model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="p">,</span> <span class="n">dtype</span><span class="p">))</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
@@ -383,10 +385,17 @@
                     <span class="n">speech_seg_</span> <span class="o">=</span> <span class="n">speech_seg</span>
 
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize_segment_scale</span><span class="p">:</span>
-                    <span class="c1"># normalize the energy of each separated stream</span>
-                    <span class="c1"># to match the input energy</span>
+                    <span class="c1"># normalize the scale to match the input mixture scale</span>
+                    <span class="n">mix_energy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                        <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">speech_seg_</span><span class="p">[:,</span> <span class="p">:</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="n">enh_energy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                        <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span>
+                            <span class="nb">sum</span><span class="p">(</span><span class="n">processed_wav</span><span class="p">)[:,</span> <span class="p">:</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
                     <span class="n">processed_wav</span> <span class="o">=</span> <span class="p">[</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">normalize_scale</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">speech_seg_</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">processed_wav</span>
+                        <span class="n">w</span> <span class="o">*</span> <span class="p">(</span><span class="n">mix_energy</span> <span class="o">/</span> <span class="n">enh_energy</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">processed_wav</span>
                     <span class="p">]</span>
                 <span class="c1"># List[torch.Tensor(num_spk, B, T)]</span>
                 <span class="n">enh_waves</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">processed_wav</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
@@ -437,21 +446,6 @@
 
         <span class="k">return</span> <span class="n">waves</span>
 
-<div class="viewcode-block" id="SeparateSpeech.normalize_scale"><a class="viewcode-back" href="../../../_gen/espnet2.bin.html#espnet2.bin.enh_inference.SeparateSpeech.normalize_scale">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">normalize_scale</span><span class="p">(</span><span class="n">enh_wav</span><span class="p">,</span> <span class="n">ref_ch_wav</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Normalize the energy of enh_wav to match that of ref_ch_wav.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            enh_wav (torch.Tensor): (B, Nsamples)</span>
-<span class="sd">            ref_ch_wav (torch.Tensor): (B, Nsamples)</span>
-<span class="sd">        Returns:</span>
-<span class="sd">            enh_wav (torch.Tensor): (B, Nsamples)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">ref_energy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ref_ch_wav</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
-        <span class="n">enh_energy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">enh_wav</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">enh_wav</span> <span class="o">*</span> <span class="p">(</span><span class="n">ref_energy</span> <span class="o">/</span> <span class="n">enh_energy</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span></div>
-
 <div class="viewcode-block" id="SeparateSpeech.cal_permumation"><a class="viewcode-back" href="../../../_gen/espnet2.bin.html#espnet2.bin.enh_inference.SeparateSpeech.cal_permumation">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">cal_permumation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ref_wavs</span><span class="p">,</span> <span class="n">enh_wavs</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;si_snr&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculate the permutation between seaprated streams in two adjacent segments.</span>
@@ -473,7 +467,37 @@
         <span class="p">}[</span><span class="n">criterion</span><span class="p">]</span>
 
         <span class="n">_</span><span class="p">,</span> <span class="n">perm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">enh_model</span><span class="o">.</span><span class="n">_permutation_loss</span><span class="p">(</span><span class="n">ref_wavs</span><span class="p">,</span> <span class="n">enh_wavs</span><span class="p">,</span> <span class="n">loss_func</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">perm</span></div></div>
+        <span class="k">return</span> <span class="n">perm</span></div>
+
+<div class="viewcode-block" id="SeparateSpeech.from_pretrained"><a class="viewcode-back" href="../../../_gen/espnet2.bin.html#espnet2.bin.enh_inference.SeparateSpeech.from_pretrained">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_pretrained</span><span class="p">(</span>
+        <span class="n">model_tag</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build SeparateSpeech instance from the pretrained model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model_tag (Optional[str]): Model tag of the pretrained models.</span>
+<span class="sd">                Currently, the tags of espnet_model_zoo are supported.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SeparateSpeech: SeparateSpeech instance.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">model_tag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">espnet_model_zoo.downloader</span> <span class="kn">import</span> <span class="n">ModelDownloader</span>
+
+            <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s2">&quot;`espnet_model_zoo` is not installed. &quot;</span>
+                    <span class="s2">&quot;Please install via `pip install -U espnet_model_zoo`.&quot;</span>
+                <span class="p">)</span>
+                <span class="k">raise</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">ModelDownloader</span><span class="p">()</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">d</span><span class="o">.</span><span class="n">download_and_unpack</span><span class="p">(</span><span class="n">model_tag</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">SeparateSpeech</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="humanfriendly_or_none"><a class="viewcode-back" href="../../../_gen/espnet2.bin.html#espnet2.bin.enh_inference.humanfriendly_or_none">[docs]</a><span class="k">def</span> <span class="nf">humanfriendly_or_none</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
@@ -493,8 +517,9 @@
     <span class="n">log_level</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
     <span class="n">data_path_and_name_and_type</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
     <span class="n">key_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-    <span class="n">enh_train_config</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">enh_model_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">train_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">model_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">model_tag</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">allow_variable_data_keys</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">segment_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
     <span class="n">hop_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
@@ -523,9 +548,9 @@
     <span class="n">set_all_random_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
 
     <span class="c1"># 2. Build separate_speech</span>
-    <span class="n">separate_speech</span> <span class="o">=</span> <span class="n">SeparateSpeech</span><span class="p">(</span>
-        <span class="n">enh_train_config</span><span class="o">=</span><span class="n">enh_train_config</span><span class="p">,</span>
-        <span class="n">enh_model_file</span><span class="o">=</span><span class="n">enh_model_file</span><span class="p">,</span>
+    <span class="n">separate_speech_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">train_config</span><span class="o">=</span><span class="n">train_config</span><span class="p">,</span>
+        <span class="n">model_file</span><span class="o">=</span><span class="n">model_file</span><span class="p">,</span>
         <span class="n">segment_size</span><span class="o">=</span><span class="n">segment_size</span><span class="p">,</span>
         <span class="n">hop_size</span><span class="o">=</span><span class="n">hop_size</span><span class="p">,</span>
         <span class="n">normalize_segment_scale</span><span class="o">=</span><span class="n">normalize_segment_scale</span><span class="p">,</span>
@@ -534,6 +559,10 @@
         <span class="n">normalize_output_wav</span><span class="o">=</span><span class="n">normalize_output_wav</span><span class="p">,</span>
         <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
         <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">separate_speech</span> <span class="o">=</span> <span class="n">SeparateSpeech</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span>
+        <span class="n">model_tag</span><span class="o">=</span><span class="n">model_tag</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">separate_speech_kwargs</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="c1"># 3. Build data-iterator</span>
@@ -635,8 +664,22 @@
     <span class="p">)</span>
 
     <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">&quot;The model configuration related&quot;</span><span class="p">)</span>
-    <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--enh_train_config&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--enh_model_file&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--train_config&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Training configuration file&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--model_file&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Model parameter file&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--model_tag&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Pretrained model tag. If specify this option, train_config and &quot;</span>
+        <span class="s2">&quot;model_file will be overwritten&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">&quot;Data loading related&quot;</span><span class="p">)</span>
     <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
