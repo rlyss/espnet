@@ -4,12 +4,23 @@ espnet2.torch_utils package
 
 
 
-.. _espnet2.torch_utils.add_gradient_noise:
+.. _espnet2.torch_utils.pytorch_version:
 
-espnet2.torch_utils.add_gradient_noise
---------------------------------------
+espnet2.torch_utils.pytorch_version
+-----------------------------------
 
-.. automodule:: espnet2.torch_utils.add_gradient_noise
+.. automodule:: espnet2.torch_utils.pytorch_version
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+.. _espnet2.torch_utils.model_summary:
+
+espnet2.torch_utils.model_summary
+---------------------------------
+
+.. automodule:: espnet2.torch_utils.model_summary
     :members:
     :undoc-members:
     :show-inheritance:
@@ -70,17 +81,6 @@ espnet2.torch_utils.recursive_op
     :show-inheritance:
 
 
-.. _espnet2.torch_utils.pytorch_version:
-
-espnet2.torch_utils.pytorch_version
------------------------------------
-
-.. automodule:: espnet2.torch_utils.pytorch_version
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
 .. _espnet2.torch_utils.__init__:
 
 espnet2.torch_utils.__init__
@@ -92,12 +92,12 @@ espnet2.torch_utils.__init__
     :show-inheritance:
 
 
-.. _espnet2.torch_utils.model_summary:
+.. _espnet2.torch_utils.add_gradient_noise:
 
-espnet2.torch_utils.model_summary
----------------------------------
+espnet2.torch_utils.add_gradient_noise
+--------------------------------------
 
-.. automodule:: espnet2.torch_utils.model_summary
+.. automodule:: espnet2.torch_utils.add_gradient_noise
     :members:
     :undoc-members:
     :show-inheritance:
